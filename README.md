@@ -73,6 +73,7 @@ $sftpoutdir = "your output directory on the SFTP server"
 You can edit the $kapeArgs line in the script to adjust the targets or modules used during collection.
 Just ensure your kape.zip contains the required files for the modules/targets you reference.
 
+---
 
 ###🤝 Contributions
 Pull requests and feedback are welcome!
