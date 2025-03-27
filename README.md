@@ -66,9 +66,13 @@ $sftpuser   = "your-username"
 $sftpass    = "your-password" or use Get-Credential CMDlet to get your password if you don't want to hardcode it
 $sftpoutdir = "your output Dir on SFTP Server"
 
-### 3. Customize the KAPE command (optional)
+
+
+(Optional) Customize the KAPE command 
 You can edit the $kapeArgs line in the script to adjust the targets or modules.
 Just ensure your kape.zip contains the required files for the modules/targets you reference.
+
+
 
 
 🤝 Contributions and notes
