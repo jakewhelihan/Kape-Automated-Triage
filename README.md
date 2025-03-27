@@ -65,7 +65,7 @@ $sftpserver = "your-sftp-server"
 $sftpuser   = "your-username"
 $sftpass    = "your-password"  # or use Get-Credential if you don't want to hardcode it
 $sftpoutdir = "your output directory on the SFTP server"
-'''
+```
 
 
 
