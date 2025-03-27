@@ -46,7 +46,7 @@ This script automates the following:
 
 Before running the script:
 
-### 1. Set the `$kapezip` variable
+### 1. Set the `$kapezip` variable  
 Change it to reflect the path to your `kape.zip`.
 
 - Example (local):  
@@ -60,20 +60,11 @@ Change it to reflect the path to your `kape.zip`.
 ### 2. Update SFTP credentials  
 Modify the following variables in the script to match your SFTP environment:
 
+```powershell
 $sftpserver = "your-sftp-server"
 $sftpuser   = "your-username"
-$sftpass    = "your-password" or use Get-Credential CMDlet to get your password if you don't want to hardcode it
-$sftpoutdir = "your output Dir on SFTP Server"
+$sftpass    = "your-password"  # or use Get-Credential if you don't want to hardcode it
+$sftpoutdir = "your output directory on the SFTP server"
 
 
-(Optional) Customize the KAPE command 
-You can edit the $kapeArgs line in the script to adjust the targets or modules.
-Just ensure your kape.zip contains the required files for the modules/targets you reference.
-
-
-
-
-🤝 Contributions and notes
-I fully understand that not all companies utitlize psexec and SMB, however, this can be used as a template for whatever remote management tool you use. 
-Pull requests and feedback are welcome!
-Feel free to fork and enhance this project for your organization’s needs.
+### 3. TEst
