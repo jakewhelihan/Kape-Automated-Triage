@@ -74,6 +74,6 @@ You can edit the $kapeArgs line in the script to adjust the targets or modules u
 Just ensure your kape.zip contains the required files for the modules/targets you reference.
 
 
-🤝 Contributions
+##🤝 Contributions
 Pull requests and feedback are welcome!
 Feel free to fork and enhance this project for your organization’s needs.
