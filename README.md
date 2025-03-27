@@ -75,6 +75,6 @@ Just ensure your kape.zip contains the required files for the modules/targets yo
 
 ---
 
-###🤝 Contributions
+### Contributions
 Pull requests and feedback are welcome!
 Feel free to fork and enhance this project for your organization’s needs.
