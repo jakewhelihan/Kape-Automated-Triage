@@ -60,12 +60,10 @@ Change it to reflect the path to your `kape.zip`.
 ### 2. Update SFTP credentials  
 Modify the following variables in the script to match your SFTP environment:
 
-```powershell
 $sftpserver = "your-sftp-server"
 $sftpuser   = "your-username"
 $sftpass    = "your-password" or use Get-Credential CMDlet to get your password if you don't want to hardcode it
 $sftpoutdir = "your output Dir on SFTP Server"
-
 
 
 (Optional) Customize the KAPE command 
