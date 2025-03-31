@@ -31,7 +31,7 @@ This script automates the following:
   
   - kape.exe
   - A targets folder containing:
-      -The full contents of the Targets folder from your full KAPE installation (ensure KapeTriage is included)
+      - The full contents of the Targets folder from your full KAPE installation (ensure KapeTriage is included)
   - A modules folder containing:
       - bin folder
       - compound folder
