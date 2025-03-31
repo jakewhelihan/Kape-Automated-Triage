@@ -28,7 +28,8 @@ This script automates the following:
 - **PsExec** installed at: `C:\sysinternalssuite\PsExec.exe`
 - A **KAPE zip package** (`kape.zip`) containing:
   Inside kape.zip, include:
--kape.exe
+  
+- kape.exe
 - A targets folder containing:
     -The full contents of the Targets folder from your full KAPE installation (ensure KapeTriage is included)
 - A modules folder containing:
