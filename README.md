@@ -29,14 +29,14 @@ This script automates the following:
 - A **KAPE zip package** (`kape.zip`) containing:
   Inside kape.zip, include:
   
-- kape.exe
-- A targets folder containing:
-    -The full contents of the Targets folder from your full KAPE installation (ensure KapeTriage is included)
-- A modules folder containing:
-    - bin folder
-    - compound folder
-    - EZ Tools Folder
-    - All sourced from the Modules Directory of your full KAPE Installation
+  - kape.exe
+  - A targets folder containing:
+      -The full contents of the Targets folder from your full KAPE installation (ensure KapeTriage is included)
+  - A modules folder containing:
+      - bin folder
+      - compound folder
+      - EZ Tools Folder
+      - All sourced from the Modules Directory of your full KAPE Installation
       
  Where should it be hosted?
   - On a file server accessible via `\\HOST\c$` (SMB)
