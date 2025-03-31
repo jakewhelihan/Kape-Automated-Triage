@@ -28,22 +28,18 @@ This script automates the following:
 - **PsExec** installed at: `C:\sysinternalssuite\PsExec.exe`
 - A **KAPE zip package** (`kape.zip`) containing:
   Inside kape.zip, include:
-
--kape.zip/
-├── kape.exe
-├── targets/
-│   └── [Full contents of the "Targets" folder from full KAPE install]
-└── modules/
-    ├── bin/
-    ├── compound/
-    └── EZTools/
-
-    
-
-(all sourced from the Modules directory of your full KAPE installation)
-  - Locally on your machine  
-  **OR**
+-kape.exe
+- A targets folder containing:
+    -The full contents of the Targets folder from your full KAPE installation (ensure KapeTriage is included)
+- A modules folder containing:
+    - bin folder
+    - compound folder
+    - EZ Tools Folder
+    - All sourced from the Modules Directory of your full KAPE Installation
+      
+ Where should it be hosted?
   - On a file server accessible via `\\HOST\c$` (SMB)
+  - On your local machine as long as it can be accessed via admin share
 - Analyst and target systems must allow:
   - Admin access via SMB (`\\HOST\c$`)  
   - Remote execution permissions
