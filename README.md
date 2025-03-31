@@ -27,15 +27,20 @@ This script automates the following:
 
 - **PsExec** installed at: `C:\sysinternalssuite\PsExec.exe`
 - A **KAPE zip package** (`kape.zip`) containing:
-  - A minimal KAPE folder with:
-    - `KapeTriage` target  
-    - `!EZParser` module
-    - To do this, you must have a full Kape download folder. create a zip folder called "kape.zip" and create a "modules", "targets" folder, along with kape.exe
-    -
-    -   ![image](https://github.com/user-attachments/assets/94fa53ce-67c8-4ade-9ed7-27a7611cb430)
+  Inside kape.zip, include:
 
-  - In my experience, this setup provides everything needed for initial forensic triage.
-- **KAPE zip folder** should be hosted:
+-kape.zip/
+├── kape.exe
+├── targets/
+│   └── [Full contents of the "Targets" folder from full KAPE install]
+└── modules/
+    ├── bin/
+    ├── compound/
+    └── EZTools/
+
+    
+
+(all sourced from the Modules directory of your full KAPE installation)
   - Locally on your machine  
   **OR**
   - On a file server accessible via `\\HOST\c$` (SMB)
