@@ -39,6 +39,9 @@ This script automates the following:
    
     ![image](https://github.com/user-attachments/assets/3f3f2cb5-ece3-44df-8a63-cce24e6b441f)
 
+  - In my experience, this streamlined setup includes everything necessary for effective initial forensic triage, while keeping the package lightweight and portable.
+  - ** These previous steps are customizable to whatever KAPE targets/modules you need/want for your triage, this is just what I prefer.
+
       
  Where should it be hosted?
   - On a file server accessible via `\\HOST\c$` (SMB)
