@@ -36,6 +36,9 @@ This script automates the following:
       - compound folder
       - EZ Tools Folder
       - All sourced from the Modules Directory of your full KAPE Installation
+   
+    ![image](https://github.com/user-attachments/assets/3f3f2cb5-ece3-44df-8a63-cce24e6b441f)
+
       
  Where should it be hosted?
   - On a file server accessible via `\\HOST\c$` (SMB)
