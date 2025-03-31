@@ -25,6 +25,7 @@ This script automates the following:
 
 > 💡 *Note: I am using PsExec as the default method since it’s the standard in my company. The script can also be adapted to use PowerShell Remoting, but would require minor adjustments.*
 
+- A Full KAPE Installation (To build the kape.zip folder) Install here ----> https://www.kroll.com/en/services/cyber-risk/incident-response-litigation-support/kroll-artifact-parser-extractor-kape
 - **PsExec** installed at: `C:\sysinternalssuite\PsExec.exe`
 - A **KAPE zip package** (`kape.zip`) containing:
   
