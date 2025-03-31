@@ -44,7 +44,7 @@ This script automates the following:
   - ** These previous steps are customizable to whatever KAPE targets/modules you need/want for your triage, this is just what I prefer.
 
       
- Where should it be hosted?
+- Where should it be hosted?
   - On a file server accessible via `\\HOST\c$` (SMB)
   - On your local machine as long as it can be accessed via admin share
 - Analyst and target systems must allow:
