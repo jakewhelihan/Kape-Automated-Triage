@@ -29,7 +29,9 @@ This script automates the following:
 - A **KAPE zip package** (`kape.zip`) containing:
   - A minimal KAPE folder with:
     - `KapeTriage` target  
-    - `!EZParser` module  
+    - `!EZParser` module
+    - To do this, you must have a full Kape download folder. create a zip folder called "kape.zip" and create a "modules", "targets" folder, along with kape.exe ![image](https://github.com/user-attachments/assets/94fa53ce-67c8-4ade-9ed7-27a7611cb430)
+
   - In my experience, this setup provides everything needed for initial forensic triage.
 - **KAPE zip folder** should be hosted:
   - Locally on your machine  
