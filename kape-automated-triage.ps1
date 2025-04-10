@@ -1,6 +1,10 @@
-﻿# ================================
-# Remote KAPE Execution Script
-# ================================
+# ============================
+# Load GUI Libraries
+# ============================
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+ 
+
 
 # --- Define Variables ---
 $remoteHost = Read-Host "Please enter the Remote Host"
@@ -16,110 +20,245 @@ $sftpass    = "your-password"  # or use Get-Credential if you don't want to hard
 $sftpoutdir = "your output directory on the SFTP server"
 
 
-# --- Test Connections ---
-Write-Host "Testing Connections to SFTP Server and Remote Host....."
+# ============================
+# Functions
+# ============================
 
-if (Test-Connection -ComputerName $sftpserver -Count 2 -Quiet) {
-    Write-Host "Connection to SFTP Server established!" -ForegroundColor Green
-} else {
-    Write-Host "SFTP Server is not reachable... EXITING" -ForegroundColor Red
-    exit
-}
+function Test-Connections {
+    param(
+        [string]$remoteHost,
+        [string]$sftpserver
+    )
+	
+	Write-Host "Checking Connections...." -ForegroundColor Yellow
 
-if (Test-Connection -ComputerName $remoteHost -Count 2 -Quiet) {
-    Write-Host "Connection to $remoteHost has been established!`nBeginning Triage!" -ForegroundColor Green
-} else {
-    Write-Host "$remoteHost is NOT reachable.... EXITING" -ForegroundColor Red
-    exit
-}
-
-
-# --- Validate PsExec and Local KAPE Folder ---
-Write-Host "Checking for PsExec..."
-if (-not (Test-Path -Path $psexecPath)) {
-    Write-Host "PsExec not found at $psexecPath. Please install or move it to that location." -ForegroundColor Red
-    exit
-} else {
-    Write-Host "PsExec Installed!" -ForegroundColor Green
-}
-
-Write-Host "Checking local KAPE folder..."
-if (-not (Test-Path -Path $kapeZip )) {
-    Write-Host "KAPE ZIP not found at $kapeZip. Please install or move it to that location." -ForegroundColor Red
-    exit
-} else {
-    Write-Host "KAPE ZIP found locally!" -ForegroundColor Green
-}
-
-
-# --- Deploy KAPE to Remote Host if Not Present ---
-Write-Host "Checking if KAPE exists on $remoteHost..."
-$remoteKapeCheck = (Test-Path "\\$remoteHost\c$\kape.zip") -or (Test-Path "\\$remoteHost\c$\kape")
-
-if (-not $remoteKapeCheck) {
-    Write-Host "KAPE not found on remote host. Copying files..." -ForegroundColor Yellow
-    Copy-Item -Path $kapeZip -Destination "\\$remoteHost\c$\" -Force
-} else {
-    Write-Host "KAPE folder already exists on remote host. Skipping copy." -ForegroundColor Green
-}
-
-
-# --- Step 1: Expand KAPE ZIP Archive on Remote Host ---
-Write-Host "`n[1/2] Expanding KAPE.zip on $remoteHost..." -ForegroundColor Yellow
-
-$expandCmd = "powershell -NoProfile -ExecutionPolicy Bypass -Command `"Expand-Archive -Force -Path '$kapeRemoteZip' -DestinationPath 'C:\'`""
-$expandArgs = "cmd /c `"$expandCmd`""
-$expandPsExecArgs = "\\$remoteHost -accepteula -s $expandArgs"
-
-Start-Process -FilePath $psexecPath -ArgumentList $expandPsExecArgs -Wait -NoNewWindow
-
-
-# --- Step 2: Run KAPE on Remote Host ---
-Write-Host "`n[2/2] Running KAPE on $remoteHost..." -ForegroundColor Yellow
-
-$kapeArgs = "$kapeRemotePath\kape.exe --tsource c:\ --tdest C:\Kape\tout --tflush --target Prefetch -vss --scs 192.168.70.23 --scp 22 --scu $sftpuser --scpw `"$sftpass`" --scd $sftpoutdir --vhdx $remoteHost --mdest C:\Kape\mout --mflush --zm true --module PEcmd"
-$cmdArgs = "cmd /c `"$kapeArgs`""
-$psexecArgs = "\\$remoteHost -accepteula -s $cmdArgs"
-
-Start-Process -FilePath $psexecPath -ArgumentList $psexecArgs -Wait -NoNewWindow
-
-Start-Sleep -Seconds 5  # Brief pause before cleanup
-
-
-# --- Cleanup KAPE Files on Remote Host ---
-Write-Host "Cleaning up files on target......" -ForegroundColor Yellow
-
-# Remove KAPE folder
-try {
-    if (Test-Path "\\$remoteHost\c$\Kape") {
-        Remove-Item "\\$remoteHost\c$\Kape" -Recurse -Force -Confirm:$false
-        Write-Host "Removed KAPE folder: \\$remoteHost\c$\Kape" -ForegroundColor Green
-    } else {
-        Write-Host "KAPE folder not found: \\$remoteHost\c$\Kape"
+    if (-not (Test-Connection -ComputerName $remoteHost -Count 2 -Quiet)) {
+        [System.Windows.Forms.MessageBox]::Show("Remote host $remoteHost is NOT reachable. Exiting...")
+        throw "Remote host unreachable"   # <-- throw a terminating error
     }
-} catch {
-    Write-Warning "Failed to remove KAPE folder: $($_.Exception.Message)"
-}
+    Write-Host "Connection to $remoteHost established." -ForegroundColor Green
 
-# Remove KAPE zip file
-try {
-    if (Test-Path "\\$remoteHost\c$\Kape.zip") {
-        Remove-Item "\\$remoteHost\c$\Kape.zip" -Force -Confirm:$false
-        Write-Host "Removed KAPE zip file: \\$remoteHost\c$\Kape.zip" -ForegroundColor Green
-    } else {
-        Write-Host "KAPE zip file not found: \\$remoteHost\c$\Kape.zip"
+    if (-not (Test-Connection -ComputerName $sftpserver -Count 2 -Quiet)) {
+        [System.Windows.Forms.MessageBox]::Show("SFTP server $sftpserver is NOT reachable. Exiting...")
+        throw "SFTP server unreachable"    # <-- throw a terminating error
     }
-} catch {
-    Write-Warning "Failed to remove KAPE zip file: $($_.Exception.Message)"
+    Write-Host "Connection to SFTP Server $sftpserver established." -ForegroundColor Green
 }
 
-# Verify Cleanup
-if (-not (Test-Path "\\$remoteHost\c$\Kape") -and -not (Test-Path "\\$remoteHost\c$\Kape.zip")) {
-    Write-Host "`nCleanup complete: KAPE files removed from target.`n" -ForegroundColor Green
-} else {
-    Write-Host "`nERROR: KAPE files may still be present on remote host.`n" -ForegroundColor Red
+function KapeTriage {
+    param(
+        [string]$remoteHost
+    )
+
+    Write-Host "Starting KAPE triage on $remoteHost..."
+
+    # --- Copy KAPE ZIP ---
+    try {
+        if (-not (Test-Path "\\$remoteHost\c$\KAPE") -and -not (Test-Path "\\$remoteHost\c$\kape.zip")) {
+            Copy-Item -Path $kapeZip -Destination "\\$remoteHost\c$\" -Force -ErrorAction Stop
+            Write-Host "KAPE zip copied to $remoteHost." -ForegroundColor Green
+        } else {
+            Write-Host "KAPE already exists on $remoteHost, skipping copy." -ForegroundColor Green
+        }
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to copy KAPE: $($_.Exception.Message)")
+        return
+    }
+
+    # --- Expand KAPE ZIP ---
+    try {
+        $expandCmd = "powershell -NoProfile -ExecutionPolicy Bypass -Command `"Expand-Archive -Force -Path '$kapeRemoteZip' -DestinationPath 'C:\'`""
+        Start-Process -FilePath $psexecPath -ArgumentList "\\$remoteHost -accepteula -s cmd /c `"$expandCmd`"" -Wait -NoNewWindow -ErrorAction Stop
+        Write-Host "KAPE archive expanded on $remoteHost."
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to expand KAPE archive: $($_.Exception.Message)")
+        return
+    }
+
+    # --- Run KAPE ---
+    try {
+        $kapeArgs = "$kapeRemotePath\kape.exe --tsource c:\ --tdest C:\Kape\tout --tflush --target KapeTriage -vss --scs $sftpserver --scp 22 --scu $sftpuser --scpw `"$sftpass`" --scd $sftpoutdir --vhdx %d --mdest C:\Kape\mout --mflush --zm true --module !EZParser,Persistence,LiveResponse_NetworkDetails,LiveResponse_ProcessDetails "
+        Start-Process -FilePath $psexecPath -ArgumentList "\\$remoteHost -accepteula -s cmd /c `"$kapeArgs`"" -Wait -NoNewWindow -ErrorAction Stop
+        Write-Host "KAPE executed successfully on $remoteHost, output available on $sftpserver. Remember to cleanup before exiting" -ForegroundColor Green
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to execute KAPE: $($_.Exception.Message)")
+        return
+    }
+}
+
+function Collect-MemoryDump {
+	param(
+        [string]$remoteHost
+    )
+	
+	
+	Write-Host "Starting memory dump on $remoteHost..."
+  try {
+        if (-not (Test-Path "\\$remoteHost\c$\KAPE") -and -not (Test-Path "\\$remoteHost\c$\kape.zip")) {
+            Copy-Item -Path $kapeZip -Destination "\\$remoteHost\c$\" -Force -ErrorAction Stop
+            Write-Host "KAPE zip copied to $remoteHost." -ForegroundColor Green
+        } else {
+            Write-Host "KAPE already exists on $remoteHost, skipping copy." -ForegroundColor Green
+        }
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to copy KAPE: $($_.Exception.Message)")
+        return
+    }
+
+    # --- Expand KAPE ZIP ---
+    try {
+        $expandCmd = "powershell -NoProfile -ExecutionPolicy Bypass -Command `"Expand-Archive -Force -Path '$kapeRemoteZip' -DestinationPath 'C:\'`""
+        Start-Process -FilePath $psexecPath -ArgumentList "\\$remoteHost -accepteula -s cmd /c `"$expandCmd`"" -Wait -NoNewWindow -ErrorAction Stop
+        Write-Host "KAPE archive expanded on $remoteHost."
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to expand KAPE archive: $($_.Exception.Message)")
+        return
+    }
+
+          try {
+        $kapeArgs = "$kapeRemotePath\kape.exe --tsource c:\ --tdest C:\Kape\tout --tflush --target MemoryFiles -vss --scs $sftpserver --scp 22 --scu $sftpuser --scpw `"$sftpass`" --scd $sftpmem --vhdx $remoteHost --mdest C:\Kape\mout --mflush --zm true --module DumpIt_Memory"
+        Start-Process -FilePath $psexecPath -ArgumentList "\\$remoteHost -accepteula -s cmd /c `"$kapeArgs`"" -Wait -NoNewWindow -ErrorAction Stop
+        Write-Host "KAPE executed successfully on $remoteHost, output available on $sftpserver. Remember to cleanup before exiting" -ForegroundColor Green
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to execute KAPE: $($_.Exception.Message)")
+        return
+    }
 }
 
 
-# --- Done ---
-Write-Host "`nKAPE execution complete! Output is available in $sftpoutdir on SFTP Server" -ForegroundColor Green
+function Cleanup-RemoteHost {
+    param(
+        [string]$remoteHost
+    )
+
+    Write-Host "Starting cleanup on $remoteHost..." -ForegroundColor Yellow
+
+    try {
+        if (Test-Path "\\$remoteHost\c$\KAPE") {
+            Remove-Item "\\$remoteHost\c$\KAPE" -Recurse -Force -ErrorAction Stop
+            Write-Host "Removed KAPE folder." -ForegroundColor Green
+        }
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to remove KAPE folder: $($_.Exception.Message)")
+    }
+
+    try {
+        if (Test-Path "\\$remoteHost\c$\kape.zip") {
+            Remove-Item "\\$remoteHost\c$\kape.zip" -Force -ErrorAction Stop
+            Write-Host "Removed KAPE zip." -ForegroundColor Green
+        }
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to remove KAPE zip: $($_.Exception.Message)")
+    }
+
+    Write-Host "Cleanup completed on $remoteHost." -ForegroundColor Green
+}
+
+ function Exit-Application {
+    Write-Host "Exiting application..."
+    if ($form) { $form.Close() }
+}
+
+
+
+# ============================
+# GUI Setup
+# ============================
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = "Remote IR Tool"
+$form.Size = New-Object System.Drawing.Size(400,400)
+$form.StartPosition = "CenterScreen"
+
+# --- Remote Host Label ---
+$hostLabel = New-Object System.Windows.Forms.Label
+$hostLabel.Location = New-Object System.Drawing.Point(10,20)
+$hostLabel.Size = New-Object System.Drawing.Size(100,20)
+$hostLabel.Text = "Remote Host:"
+$form.Controls.Add($hostLabel)
+
+# --- Remote Host Input ---
+$hostInput = New-Object System.Windows.Forms.TextBox
+$hostInput.Location = New-Object System.Drawing.Point(120,18)
+$hostInput.Size = New-Object System.Drawing.Size(200,20)
+$form.Controls.Add($hostInput)
+
+# --- Deploy Button ---
+$deployButton = New-Object System.Windows.Forms.Button
+$deployButton.Location = New-Object System.Drawing.Point(10,60)
+$deployButton.Size = New-Object System.Drawing.Size(150,40)
+$deployButton.Text = "Run KAPE Triage"
+$deployButton.Add_Click({
+    $remoteHost = $hostInput.Text.Trim()
+
+    if ($remoteHost) {
+        try {
+         
+            Test-Connections -remoteHost $remoteHost -sftpserver $sftpserver
+
+            # If we get here, connections passed
+            KapeTriage $remoteHost
+        } catch {
+            
+          Write-Host "`n===================================================" -ForegroundColor DarkGray
+		  Write-Host "[!] Connection failed. Please ensure the remote host and SFTP server are online." -ForegroundColor Red
+	      Write-Host "===================================================" -ForegroundColor DarkGray
+
+            
+        }
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Please enter a remote host!")
+    }
+})
+
+
+$form.Controls.Add($deployButton)
+
+# --- Memory Dump Button ---
+$memdumpButton = New-Object System.Windows.Forms.Button
+$memdumpButton.Location = New-Object System.Drawing.Point(200,60)
+$memdumpButton.Size = New-Object System.Drawing.Size(150,40)
+$memdumpButton.Text = "Collect Memory Dump"
+$memdumpButton.Add_Click({
+    $remoteHost = $hostInput.Text.Trim()
+
+    if ($remoteHost) {
+        Collect-MemoryDump $remoteHost
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Please enter a remote host!")
+    }
+})
+$form.Controls.Add($memdumpButton)
+
+# --- Cleanup Button ---
+$cleanupButton = New-Object System.Windows.Forms.Button
+$cleanupButton.Location = New-Object System.Drawing.Point(100,120)
+$cleanupButton.Size = New-Object System.Drawing.Size(150,40)
+$cleanupButton.Text = "Cleanup Remote Host"
+$cleanupButton.Add_Click({
+    $remoteHost = $hostInput.Text.Trim()
+
+    if ($remoteHost) {
+        Cleanup-RemoteHost $remoteHost
+    } else {
+        [System.Windows.Forms.MessageBox]::Show("Please enter a remote host!")
+    }
+})
+$form.Controls.Add($cleanupButton)
+
+# --- Exit Button ---
+$exitButton = New-Object System.Windows.Forms.Button
+$exitButton.Location = New-Object System.Drawing.Point(100,180)
+$exitButton.Size = New-Object System.Drawing.Size(150,40)
+$exitButton.Text = "Exit"
+$exitButton.Add_Click({
+    Exit-Application
+})
+$form.Controls.Add($exitButton)
+
+# ============================
+# Show the Form
+# ============================
+$form.Topmost = $true
+$form.Add_Shown({$form.Activate()})
+[void]$form.ShowDialog()
